@@ -145,69 +145,56 @@ Pozwala to na wykreślenie charakterystyki skokowej i zbadanie uchybu regulacji 
 
 Powyższy wykres przedstawia charakterystykę skokową systemu regulacji temperatury z zadaną temperaturą 27.0°C. Widoczne jest działanie regulatora PID, który skutecznie doprowadza temperaturę do wartości zadanej z minimalnym uchybem regulacji. Po ustabilizowaniu wykresu błąd wynosił około 3-4%.
 
-## 🧮 Analityczny dobór nastaw (Metoda Zieglera-Nicholsa)
+## 🧮 Analityczna weryfikacja nastaw (Estymacja)
 
-W celu wyznaczenia optymalnych nastaw regulatora, zamiast metody prób i błędów, zastosowano **II Metodę Zieglera-Nicholsa** (metodę oscylacji krytycznych). Pozwala ona na wyliczenie nastaw na podstawie zachowania układu w stanie niestabilnym (oscylującym).
+W celu weryfikacji i dostrojenia nastaw regulatora, posłużono się analizą charakterystyki skokowej układu (widocznej na wykresie). Wykorzystano zmodyfikowane podejście oparte na metodzie Zieglera-Nicholsa, estymując parametry dynamiczne obiektu na podstawie obserwowanych oscylacji.
 
-### 1. Wyznaczenie parametrów krytycznych
+### 1. Identyfikacja parametrów z wykresu
 
-Na podstawie przeprowadzonego eksperymentu (widocznego na wykresie charakterystyki), doprowadzono układ do granicy stabilności, uzyskując stałe oscylacje temperatury. Z wykresu odczytano dwa kluczowe parametry:
+Mimo że układ wykazuje stabilność (oscylacje gasnące), widoczna cykliczność pozwala na wyznaczenie naturalnego okresu drgań układu, co jest kluczowe dla doboru czasu zdwojenia (Ti) i wyprzedzenia (Td).
 
-| Parametr                             | Opis                                                                              | Wartość |
-| ------------------------------------ | --------------------------------------------------------------------------------- | ------- |
-| **Ku** (Wzmocnienie krytyczne)       | Wartość wzmocnienia członu proporcjonalnego (Kp), przy którym wystąpiły oscylacje | ≈ 650   |
-| **Tu** (Okres oscylacji krytycznych) | Czas pomiędzy dwoma kolejnymi szczytami temperatury                               | 600s    |
+| Parametr                   | Opis                                                    | Wartość Szacowana |
+| -------------------------- | ------------------------------------------------------- | ----------------- |
+| **Tosc** (Okres oscylacji) | Czas pomiędzy kolejnymi szczytami temperatury (t₂ - t₁) | 600s              |
+| **Charakter**              | Oscylacje gasnące (układ niedotłumiony)                 | -                 |
 
-**Obliczenie okresu oscylacji:**
+**Obliczenie okresu z wykresu:**
 
-- Szczyt 1: t₁ ≈ 400s
-- Szczyt 2: t₂ ≈ 1000s
-- **Tu = t₂ - t₁ = 1000s - 400s = 600s**
+- Szczyt 1 (maksimum przeregulowania): t₁ ≈ 400s
+- Szczyt 2 (kolejne lokalne maksimum): t₂ ≈ 1000s
+- **Tosc = t₂ - t₁ = 1000s - 400s = 600s**
 
-### 2. Obliczenia nastaw PID
+### 2. Dobór nastaw na podstawie estymacji
 
-Dla klasycznego regulatora PID, metoda Zieglera-Nicholsa definiuje następujące zależności dla struktury równoległej:
+Przyjmując wyznaczony okres Tosc jako przybliżenie okresu krytycznego Tu, zastosowano reguły strojenia dla regulatora PID:
 
-```
-Kp = 0.6 · Ku
-Ti = 0.5 · Tu
-Td = 0.125 · Tu
-```
+#### Część całkująca (Ti)
 
-#### Wzmocnienie Proporcjonalne (Kp)
+Według reguł inżynierskich, czas zdwojenia powinien być zbliżony do połowy okresu naturalnych oscylacji, aby skutecznie likwidować uchyb bez wprowadzania niestabilności.
 
 ```
-Kp = 0.6 · 650 = 390 ≈ 400
+Ti ≈ 0.5 · Tosc = 300s
 ```
 
-#### Czas zdwojenia (Ti) i parametr Ki
-
-```
-Ti = 0.5 · 600s = 300s
-```
-
-W implementacji cyfrowej (dla czasu próbkowania Ts = 1s):
+Dla Kp = 400, wyliczone Ki:
 
 ```
 Ki = (Kp · Ts) / Ti = (400 · 1) / 300 ≈ 1.33
 ```
 
-> **Uwaga:** W projekcie finalnie dobrano Ki = 10 ze względu na dużą bezwładność termiczną i potrzebę szybszej likwidacji uchybu statycznego.
+> **Uwaga:** W projekcie finalnie wzmocniono akcję całkującą do Ki = 10 ze względu na dużą bezwładność termiczną grzałki.
 
-#### Czas wyprzedzenia (Td) i parametr Kd
+#### Część różniczkująca (Td)
 
-```
-Td = 0.125 · 600s = 75s
-```
-
-W implementacji cyfrowej:
+Teoretycznie:
 
 ```
-Kd = (Kp · Td) / Ts = (400 · 75) / 1 = 30000
+Td ≈ 0.125 · Tosc = 75s
+Kd = (Kp · Td) / Ts = 30000
 ```
 
-> **Uwaga:** W praktyce człon różniczkujący dla obiektów cieplnych generuje duże szumy, dlatego eksperymentalnie zredukowano Kd do wartości 50, aby wygładzić sterowanie.
+> **Uwaga:** W implementacji cyfrowej tak wysokie Kd powodowało wzmocnienie szumów pomiarowych, dlatego parametr ten został ograniczony eksperymentalnie do wartości 50.
 
-### 📝 Wnioski z obliczeń
+### 📝 Wnioski
 
-Obliczenia metodą Zieglera-Nicholsa dały punkt startowy dla nastaw (**Kp ≈ 400**). Ze względu na specyfikę obiektu (rezystor o dużej inercji), nastawy członu całkującego (Ki) oraz różniczkującego (Kd) zostały skorygowane, aby zapewnić mniejsze przeregulowanie i szybszy czas ustalania, co jest typową praktyką inżynierską (tzw. _fine-tuning_).
+Analiza wykresu potwierdza poprawność przyjętego rzędu wielkości nastaw. Układ zachowuje się stabilnie (amplituda oscylacji maleje w czasie), a okres oscylacji wynoszący około 10 minut (600s) świadczy o dużej stałej czasowej obiektu cieplnego. Przyjęte nastawy (Kp = 400, Ki = 10, Kd = 50) zapewniają kompromis między szybkością dochodzenia do temperatury zadanej a stabilnością regulacji.
