@@ -142,7 +142,7 @@
 	%            Uzupełnić powyżej tylko - Imię Nazwisko -
 	% ########################################################
 	
-	
+
 \section{Cel projektu}
 Celem projektu było zaprojektowanie i zrealizowanie mikroprocesorowego układu regulacji temperatury w zamkniętej pętli sprzężenia zwrotnego. Projekt zakładał wykorzystanie mikrokontrolera z rodziny STM32, cyfrowego czujnika temperatury oraz algorytmu PID do sterowania elementem grzejnym. Dodatkowymi wymaganiami była realizacja interfejsu użytkownika (wyświetlacz LCD, enkoder) oraz dwukierunkowej komunikacji szeregowej (UART) do celów telemetrycznych.
 
@@ -156,7 +156,7 @@ W projekcie wykorzystano następujące podzespoły:
     \item \textbf{Element wykonawczy:} Rezystor mocy sterowany tranzystorem (Grzałka).
     \item \textbf{Interfejs HMI:} Wyświetlacz LCD 2x16 (sterownik I2C HD44780) oraz enkoder inkrementalny.
 \end{itemize}
-
+\newpage
 \subsection{Konfiguracja Pinout}
 Tabela \ref{tab:pinout} przedstawia przypisanie wyprowadzeń mikrokontrolera do poszczególnych peryferiów.
 
@@ -167,7 +167,7 @@ Tabela \ref{tab:pinout} przedstawia przypisanie wyprowadzeń mikrokontrolera do 
 \begin{tabular}{|c|c|l|}
 \hline
 \textbf{Peryferium} & \textbf{Pin / Port} & \textbf{Funkcja} \\ \hline
-Grzałka (Heater) & PD7 & Wyjście sterujące (On-Off / PWM programowy) \\ \hline
+Grzałka & PD7 & Wyjście sterujące (On-Off / PWM programowy) \\ \hline
 BMP280 & I2C1 (PB8, PB9) & Komunikacja z czujnikiem temperatury \\ \hline
 LCD 2x16 & I2C4 & Obsługa wyświetlacza \\ \hline
 Enkoder & TIM1 & Ustawianie temperatury zadanej \\ \hline
@@ -175,6 +175,22 @@ UART & USART3 & Komunikacja z PC (115200 baud) \\ \hline
 LED Status & PB0 (LD1) & Sygnalizacja grzania \\ \hline
 \end{tabular}
 \end{table}
+
+\section{Wykorzystane środowiska programistyczne}
+\subsection{STM32 CubeIDE}
+STM32 CubeIDE to darmowe środowisko programistyczne firmy STMicroelectronics przeznaczone do tworzenia aplikacji na mikrokontrolery STM32. Łączy w jednym narzędziu edytor kodu, kompilator, debugger oraz moduł STM32CubeMX, który umożliwia graficzną konfigurację pinów, zegarów i peryferiów mikrokontrolera. Środowisko bazuje na platformie pozwala na programowanie w języku C oraz C++, z wykorzystaniem bibliotek HAL i LL. Dzięki wbudowanej obsłudze programatora i debuggera ST-LINK ułatwia uruchamianie, testowanie i analizę działania aplikacji na sprzęcie.
+\subsection{Visual Studio Code}
+Visual Studio Code to darmowe środowisko programistyczne stworzone przez firmę Microsoft. Jest to edytor kodu z rozbudowanymi funkcjami i wieloma rozszerzeniami. Obsługuje wiele języków programowania, w tym użyty do stworzenia charakterystyki regulacji \ref{fig:wykres} Python. VS Code oferuje m.in. podświetlanie składni, inteligentne podpowiedzi, debugowanie oraz integrację z systemami kontroli wersji, takimi jak Git. Głównymi zaletami tego środowiska jest jego prostota i elastyczność.
+
+\newpage
+\section{Schemat elektroniczny układu pomiarowego}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{schemat.png}
+    \caption{Schemat badanego układu}
+    \label{fig:wykres}
+\end{figure}
+
 
 \section{Algorytm sterowania (PID)}
 
