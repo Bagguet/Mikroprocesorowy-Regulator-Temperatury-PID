@@ -1,0 +1,309 @@
+\documentclass[a4paper,12pt,twoside,onecolumn]{article}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage[OT4]{fontenc}
+
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{amsbsy,amssymb,amsmath} 
+\usepackage{fancyhdr} % naglowek i stopka
+%\usepackage{epic,eepic}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{overpic}
+\usepackage{here}
+\usepackage{ulem}
+\usepackage{array}
+\usepackage{multirow} 
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{colortbl} % kolorowe wiersze tabel
+\usepackage{enumitem}
+\usepackage{background}
+\usepackage{icomma}
+
+
+\usepackage{tikz}
+\usepackage{scalefnt}
+
+\usepackage{ifpdf}
+\graphicspath{{./img/}}
+
+\SetBgContents{}
+
+\usepackage[a4paper, left=2.0cm, right=2.5cm, top=3.0cm, bottom=2.5cm, headsep=0.75cm]{geometry} 
+\usepackage[ddmmyyyy,hhmmss]{datetime}
+\newtimeformat{dottime}{\twodigit{\THEHOUR}:\twodigit{\THEMINUTE}}
+\settimeformat{dottime}
+\usepackage{graphicx}
+\usepackage{caption}
+
+\usepackage[unicode,pdftex]{hyperref}
+\hypersetup{%
+	colorlinks = true,   % false: boxed links; true: colored lin
+	linkcolor  = red, % color of internal links (change box color with linkbordercolor)
+	urlcolor = NavyBlue,  % color of external links
+	citecolor=red,        % color of links to bibliography
+	filecolor=magenta,      % color of file links
+}
+
+
+%\usepackage{listings, color}
+\usepackage{matlab-prettifier}
+\usepackage{listings}
+
+% Configure listings for UTF-8 Polish characters
+\lstset{
+    inputencoding=utf8,
+    extendedchars=true,
+    literate={ą}{{\k{a}}}1
+             {ć}{{\'c}}1
+             {ę}{{\k{e}}}1
+             {ł}{{\l{}}}1
+             {ń}{{\'n}}1
+             {ó}{{\'o}}1
+             {ś}{{\'s}}1
+             {ź}{{\'z}}1
+             {ż}{{\.z}}1
+             {Ą}{{\k{A}}}1
+             {Ć}{{\'C}}1
+             {Ę}{{\k{E}}}1
+             {Ł}{{\L{}}}1
+             {Ń}{{\'N}}1
+             {Ó}{{\'O}}1
+             {Ś}{{\'S}}1
+             {Ź}{{\'Z}}1
+             {Ż}{{\.Z}}1,
+}
+
+%\linespread{1.3}
+%\linespread{1.0}
+\renewcommand{\labelitemi}{$\bullet$}
+
+\def\Szerkol{1.5}
+\def\OdlegloscItem{0.01}
+
+% --------------------------------------
+
+\pagestyle{myheadings}
+
+
+
+% --------------------------------------
+
+\begin{document}
+	
+	
+	%--------------
+	
+	% ########################################################
+	%                     PONIŻEJ WYPEŁNIĆ
+	% ########################################################
+	\def\PRZEDMIOT{Systemy mikroprocesorowe}  % Zmienić jesli potrzeba
+	\def\TEMAT{Regulator Temperatury PID}   % Temat ćwiczenia
+	\def\NazwiskoA{Maksymilian Naskręt}
+	\def\NazwiskoB{Eryk Naumienko}
+	
+	\markboth{\PRZEDMIOT}{\PRZEDMIOT}
+	
+	
+	\title{\textbf{\PRZEDMIOT}
+		\par
+		\textsc{\Large Sprawozdanie -- Regulator Temperatury PID }
+		%
+		\begin{center}
+			\textsc{\TEMAT}
+			\par\end{center}
+	}
+	\author
+	{
+		\texttt{Naskręt,Naumienko}
+		\date{\date{\today}} % DATA wykonania ćwiczenia w laboratorium
+	} 
+	% ########################################################
+	
+	\maketitle
+	
+	
+	\vskip 0.5cm
+	
+	
+	%-------------------------------------
+	%***********************
+	\SetBgAngle{0}
+	\SetBgScale{3}
+	\SetBgOpacity{1}
+	\SetBgContents{%
+		\scalefont{0.2}
+		\begin{tikzpicture} [remember picture,overlay]
+			\node[text=black] at (3.0,-4.6) {\date{\today}};
+			\node[text=black] at (-2.2,-4.6) {Naskręt 159549, Naumienko 159507};
+	\end{tikzpicture}}
+	% ########################################################
+	%            Uzupełnić powyżej tylko - Imię Nazwisko -
+	% ########################################################
+	
+	
+\section{Cel projektu}
+Celem projektu było zaprojektowanie i zrealizowanie mikroprocesorowego układu regulacji temperatury w zamkniętej pętli sprzężenia zwrotnego. Projekt zakładał wykorzystanie mikrokontrolera z rodziny STM32, cyfrowego czujnika temperatury oraz algorytmu PID do sterowania elementem grzejnym. Dodatkowymi wymaganiami była realizacja interfejsu użytkownika (wyświetlacz LCD, enkoder) oraz dwukierunkowej komunikacji szeregowej (UART) do celów telemetrycznych.
+
+\section{Wykorzystane elementy i konfiguracja sprzętowa}
+
+\subsection{Elementy składowe}
+W projekcie wykorzystano następujące podzespoły:
+\begin{itemize}
+    \item \textbf{Mikrokontroler:} STM32 Nucleo.
+    \item \textbf{Czujnik pomiarowy:} BMP280 (Interfejs I2C) – pomiar temperatury otoczenia.
+    \item \textbf{Element wykonawczy:} Rezystor mocy sterowany tranzystorem (Grzałka).
+    \item \textbf{Interfejs HMI:} Wyświetlacz LCD 2x16 (sterownik I2C HD44780) oraz enkoder inkrementalny.
+\end{itemize}
+
+\subsection{Konfiguracja Pinout}
+Tabela \ref{tab:pinout} przedstawia przypisanie wyprowadzeń mikrokontrolera do poszczególnych peryferiów.
+
+\begin{table}[H]
+\centering
+\caption{Konfiguracja wyprowadzeń mikrokontrolera}
+\label{tab:pinout}
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{Peryferium} & \textbf{Pin / Port} & \textbf{Funkcja} \\ \hline
+Grzałka (Heater) & PD7 & Wyjście sterujące (On-Off / PWM programowy) \\ \hline
+BMP280 & I2C1 (PB8, PB9) & Komunikacja z czujnikiem temperatury \\ \hline
+LCD 2x16 & I2C4 & Obsługa wyświetlacza \\ \hline
+Enkoder & TIM1 & Ustawianie temperatury zadanej \\ \hline
+UART & USART3 & Komunikacja z PC (115200 baud) \\ \hline
+LED Status & PB0 (LD1) & Sygnalizacja grzania \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Algorytm sterowania (PID)}
+
+W projekcie zaimplementowano dyskretny regulator PID. Wyjście regulatora steruje czasem włączenia grzałki w cyklu 1-sekundowym (Time Proportional Control).
+
+Równanie regulatora w dziedzinie czasu ciągłego:
+\begin{equation}
+u(t) = K_p \cdot e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}
+\end{equation}
+gdzie: $e(t)$ to uchyb regulacji (różnica między wartością zadaną a mierzoną).
+
+\subsection{Implementacja programowa}
+Poniżej przedstawiono kluczowy fragment kodu odpowiedzialny za obliczanie nastaw regulatora. Zastosowano zabezpieczenie przed nasyceniem członu całkującego (Anti-Windup Clamp).
+
+\begin{lstlisting}[language=C, caption={Struktura i funkcja obliczająca PID}, frame=single]
+typedef struct {
+    float Kp;
+    float Ki;
+    float Kd;
+    float prevError;
+    float integral;
+    float outMin;
+    float outMax;
+} PID_Controller;
+
+PID_Controller pid = {
+    .Kp = 400.0f,
+    .Ki = 10.0f,
+    .Kd = 50.0f,
+    .prevError = 0.0f,
+    .integral = 0.0f,
+    .outMin = 0.0f,
+    .outMax = 1000.0f
+};
+
+float PID_Compute(PID_Controller *pid, float setpoint, float measured)
+{
+    float error = setpoint - measured;
+
+    // Człon Proporcjonalny
+    float P = pid->Kp * error;
+
+    // Człon Całkujący
+    pid->integral += error;
+    if (pid->integral > pid->outMax) pid->integral = pid->outMax;
+    else if (pid->integral < pid->outMin) 
+        pid->integral = pid->outMin;
+
+    float I = pid->Ki * pid->integral;
+
+    // Człon Różniczkujący
+    float D = pid->Kd * (error - pid->prevError);
+    pid->prevError = error;
+
+    // Suma
+    float output = P + I + D;
+
+    // Ograniczenie wyjścia (Clamp)
+    if (output > pid->outMax) output = pid->outMax;
+    else if (output < pid->outMin) output = pid->outMin;
+
+    return output;
+}
+
+\end{lstlisting}
+
+\section{Analiza modelu i dobór nastaw}
+
+Do wyznaczenia nastaw regulatora wykorzystano zmodyfikowaną \textbf{II Metodę Zieglera-Nicholsa} (metodę oscylacji krytycznych). Ze względu na bezpieczeństwo układu, parametry estymowano na podstawie oscylacji gasnących w pobliżu punktu pracy, a nie doprowadzając układ do trwałej niestabilności.
+
+\subsection{Identyfikacja parametrów dynamicznych}
+Na podstawie zarejestrowanej charakterystyki skokowej (Rys. \ref{fig:wykres}) wyznaczono naturalny okres oscylacji układu.
+
+\begin{itemize}
+    \item Czas wystąpienia pierwszego szczytu: $t_1 \approx 400\,s$
+    \item Czas wystąpienia drugiego szczytu: $t_2 \approx 1000\,s$
+    \item Okres oscylacji ($T_{osc}$): $1000\,s - 400\,s = 600\,s$
+    \item Wzmocnienie, przy którym wystąpiły oscylacje ($K_p$): $\approx 400$
+\end{itemize}
+
+\subsection{Obliczenia analityczne}
+Przyjmując $T_{osc} = 600\,s$ jako bazę do obliczeń (zgodnie z regułami Z-N dla regulatora PID):
+
+\begin{itemize}
+    \item \textbf{Czas zdwojenia ($T_i$):} $0.5 \cdot T_{osc} = 300\,s$.
+    \item \textbf{Czas wyprzedzenia ($T_d$):} $0.125 \cdot T_{osc} = 75\,s$.
+\end{itemize}
+
+Przeliczenie na wzmocnienia dla algorytmu dyskretnego (przyjmując czas próbkowania $T_s = 1\,s$):
+\begin{equation}
+    K_i (obl) = \frac{K_p \cdot T_s}{T_i} = \frac{400 \cdot 1}{300} \approx 1.33
+\end{equation}
+\begin{equation}
+    K_d (obl) = \frac{K_p \cdot T_d}{T_s} = \frac{400 \cdot 75}{1} = 30000
+\end{equation}
+
+\subsection{Korekta eksperymentalna (Fine-tuning)}
+Obliczone wartości teoretyczne wymagały korekty ze względu na specyfikę obiektu (duża bezwładność cieplna) oraz charakter cyfrowy (szumy kwantyzacji):
+\begin{enumerate}
+    \item \textbf{Zwiększenie $K_i$ (do 10.0):} Teoretyczna wartość ($1.33$) powodowała zbyt wolną redukcję uchybu statycznego.
+    \item \textbf{Zmniejszenie $K_d$ (do 50.0):} Teoretyczna wartość ($30000$) była zbyt wysoka dla implementacji dyskretnej, powodując silne wzmacnianie szumów pomiarowych czujnika BMP280, co prowadziło do niestabilnego sterowania grzałką.
+\end{enumerate}
+
+\section{Wyniki i weryfikacja}
+
+Poniższy wykres przedstawia charakterystykę regulacji dla zadanej temperatury $27.0^\circ C$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Charakterystyka.png}
+    \caption{Przebieg regulacji temperatury. Linia pomarańczowa - wartość zadana, linia niebieska - temperatura mierzona.}
+    \label{fig:wykres}
+\end{figure}
+
+Wykres wskazuje na stabilną pracę układu. Występują oscylacje gasnące (przeregulowanie), co jest charakterystyczne dla przyjętych nastaw, jednak układ skutecznie sprowadza temperaturę do wartości zadanej. Po ustabilizowaniu się przebiegu, błąd regulacji (uchyb) utrzymywał się na niskim poziomie wynoszącym ok. 0.3\%--0.5\%.
+
+\section{Instrukcja obsługi i funkcjonalności}
+\begin{enumerate}
+    \item Po uruchomieniu układ wyświetla na LCD aktualną temperaturę oraz zadaną wartość ($T_{zad}$).
+    \item \textbf{Zmiana lokalna:} Obrót enkoderem powoduje zmianę temperatury zadanej.
+    \item \textbf{Sterowanie zdalne (UART):} Podłączenie terminala (115200 baud) umożliwia:
+    \begin{itemize}
+        \item Odbiór danych telemetrycznych (format: \texttt{temp\_akt temp\_zad}).
+        \item Zmianę nastaw komendami: \texttt{+} (zwiększ), \texttt{-} (zmniejsz).
+    \end{itemize}
+    \item Dioda LED na nucleo sygnalizuje momenty załączenia elementu grzejnego.
+\end{enumerate}
+
+\section{Podsumowanie}
+Układ poprawnie odczytuje temperaturę, a zaimplementowany algorytm PID skutecznie steruje procesem grzania. Zastosowanie metody Zieglera-Nicholsa pozwoliło na wstępne oszacowanie nastaw, a późniejsza korekta eksperymentalna wyeliminowała problemy związane z szumami cyfrowymi oraz dużą inercją termiczną obiektu.
+
+\end{document}
