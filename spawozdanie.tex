@@ -1,5 +1,5 @@
 \documentclass[a4paper,12pt,twoside,onecolumn]{article}
-\usepackage{polski}
+\usepackage[polish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[OT4]{fontenc}
 
@@ -176,20 +176,19 @@ LED Status & PB0 (LD1) & Sygnalizacja grzania \\ \hline
 \end{tabular}
 \end{table}
 
-\section{Wykorzystane środowiska programistyczne}
-\subsection{STM32 CubeIDE}
-STM32 CubeIDE to darmowe środowisko programistyczne firmy STMicroelectronics przeznaczone do tworzenia aplikacji na mikrokontrolery STM32. Łączy w jednym narzędziu edytor kodu, kompilator, debugger oraz moduł STM32CubeMX, który umożliwia graficzną konfigurację pinów, zegarów i peryferiów mikrokontrolera. Środowisko bazuje na platformie pozwala na programowanie w języku C oraz C++, z wykorzystaniem bibliotek HAL i LL. Dzięki wbudowanej obsłudze programatora i debuggera ST-LINK ułatwia uruchamianie, testowanie i analizę działania aplikacji na sprzęcie.
-\subsection{Visual Studio Code}
-Visual Studio Code to darmowe środowisko programistyczne stworzone przez firmę Microsoft. Jest to edytor kodu z rozbudowanymi funkcjami i wieloma rozszerzeniami. Obsługuje wiele języków programowania, w tym użyty do stworzenia charakterystyki regulacji \ref{fig:wykres} Python. VS Code oferuje m.in. podświetlanie składni, inteligentne podpowiedzi, debugowanie oraz integrację z systemami kontroli wersji, takimi jak Git. Głównymi zaletami tego środowiska jest jego prostota i elastyczność.
-
-\newpage
 \section{Schemat elektroniczny układu pomiarowego}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{schemat.png}
     \caption{Schemat badanego układu}
-    \label{fig:wykres}
+    \label{fig:Schemat}
 \end{figure}
+
+\section{Wykorzystane środowiska programistyczne}
+\subsection{STM32 CubeIDE}
+STM32 CubeIDE to darmowe środowisko programistyczne firmy STMicroelectronics przeznaczone do tworzenia aplikacji na mikrokontrolery STM32. Łączy w jednym narzędziu edytor kodu, kompilator, debugger oraz moduł STM32CubeMX, który umożliwia graficzną konfigurację pinów, zegarów i peryferiów mikrokontrolera. Środowisko bazuje na platformie pozwala na programowanie w języku C oraz C++, z wykorzystaniem bibliotek HAL i LL. Dzięki wbudowanej obsłudze programatora i debuggera ST-LINK ułatwia uruchamianie, testowanie i analizę działania aplikacji na sprzęcie.
+\subsection{Visual Studio Code}
+Visual Studio Code to darmowe środowisko programistyczne stworzone przez firmę Microsoft. Jest to edytor kodu z rozbudowanymi funkcjami i wieloma rozszerzeniami. Obsługuje wiele języków programowania, w tym użyty do stworzenia charakterystyki regulacji \ref{fig:Schemat} Python. VS Code oferuje m.in. podświetlanie składni, inteligentne podpowiedzi, debugowanie oraz integrację z systemami kontroli wersji, takimi jak Git. Głównymi zaletami tego środowiska jest jego prostota i elastyczność.
 
 
 \section{Algorytm sterowania (PID)}
@@ -311,15 +310,25 @@ Wykres wskazuje na stabilną pracę układu. Występują oscylacje gasnące (prz
 \begin{enumerate}
     \item Po uruchomieniu układ wyświetla na LCD aktualną temperaturę oraz zadaną wartość ($T_{zad}$).
     \item \textbf{Zmiana lokalna:} Obrót enkoderem powoduje zmianę temperatury zadanej.
-    \item \textbf{Sterowanie zdalne (UART):} Podłączenie terminala (115200 baud) umożliwia:
+    \item \textbf{Sterowanie zdalne (Terminal):} Podłączenie terminala (115200 baud) umożliwia:
     \begin{itemize}
-        \item Odbiór danych telemetrycznych (format: \texttt{temp\_akt temp\_zad}).
+        \item Odbiór danych telemetrycznych np. w programie PuTTY (format: \texttt{temp\_akt temp\_zad}).
         \item Zmianę nastaw komendami: \texttt{+} (zwiększ), \texttt{-} (zmniejsz).
     \end{itemize}
-    \item Dioda LED na nucleo sygnalizuje momenty załączenia elementu grzejnego.
+    \item \textbf{Wizualizacja w czasie rzeczywistym (SerialPlot):} 
+    Układ przystosowany jest do współpracy z oprogramowaniem \textbf{SerialPlot} w celu rysowania wykresu temperatury na żywo. Konfiguracja programu:
+    \begin{itemize}
+        \item \textbf{Port:} Wybór odpowiedniego portu COM (STLink Virtual COM Port).
+        \item \textbf{Baud Rate:} 115200.
+        \item \textbf{Data Format:} ASCII.
+        \item \textbf{Number of Channels:} 2 (Kanał 1: Temperatura mierzona, Kanał 2: Temperatura zadana).
+        \item \textbf{Column Delimiter:} Space (spacja).
+    \end{itemize}
+    Program automatycznie interpretuje ramki danych wysyłane przez mikrokontroler i rysuje przebieg regulacji.
+    \item Dioda LED na płytce Nucleo sygnalizuje momenty załączenia elementu grzejnego.
 \end{enumerate}
 
 \section{Podsumowanie}
-Układ poprawnie odczytuje temperaturę, a zaimplementowany algorytm PID skutecznie steruje procesem grzania. Zastosowanie metody Zieglera-Nicholsa pozwoliło na wstępne oszacowanie nastaw, a późniejsza korekta eksperymentalna wyeliminowała problemy związane z szumami cyfrowymi oraz dużą inercją termiczną obiektu.
+Układ poprawnie odczytuje temperaturę, a zaimplementowany algorytm PID skutecznie steruje procesem grzania. Zastosowanie metody Zieglera-Nicholsa pozwoliło na wstępne oszacowanie nastaw, a późniejsza korekta eksperymentalna wyeliminowała problemy związane z szumami cyfrowymi oraz dużą inercją termiczną obiektu. Dodatkowo zaimplementowano wizualizację danych w czasie rzeczywistym, co pozwala na bieżącą analizę jakości regulacji.
 
 \end{document}
